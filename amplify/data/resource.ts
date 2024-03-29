@@ -8,15 +8,44 @@ specify that owners, authenticated via your Auth resource can "create",
 authenticated via an API key, can only "read" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a.model({
-      content: a.string(),
-      isDone: a.boolean(),
-      priority: a.enum(['low', 'normal', 'high']),
-      type: a.enum(["A", "B"]),
-      additionalInfo: a.json()
+  ExerciseType: a.enum(["WORD_VERB", "WORD_SUBJECT"]), 
+
+  Konjugation: a.customType({
+    singular: a.customType({
+      first: a.string(),
+      second: a.string(),
+      thirtd: a.string()
+    }),
+    plural: a.customType({
+      first: a.string(),
+      second: a.string(),
+      thirtd: a.string()
     })
-    .authorization([a.allow.owner(), a.allow.public()]),
-});
+  }),
+
+  Exercise: a.model({
+    type: a.ref("ExerciseType"),
+    description: a.string(),
+    detailId: a.string()
+  })
+  .secondaryIndexes([a.index("detailId")]),
+
+  ExerciseWordSubject: a.model({
+    english: a.string(),
+    german: a.customType({
+      singular: a.string(),
+      plural: a.string()
+    }),
+    info: a.string()
+  }),
+
+  ExerciseWordVerb: a.model({
+    english: a.string(),
+    german: a.customType({
+      present: a.ref("Konjugation")
+    })
+  })
+}).authorization([a.allow.public()]);
 
 export type Schema = ClientSchema<typeof schema>;
 
